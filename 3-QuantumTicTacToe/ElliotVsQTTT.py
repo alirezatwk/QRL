@@ -3,6 +3,7 @@ __author__ = 'QRL_team'
 from qiskit import *
 from qiskit.circuit.library import GroverOperator
 from qiskit.quantum_info import Statevector
+from qiskit_aer import Aer
 import numpy as np
 from math import ceil
 
@@ -154,9 +155,10 @@ class GroverQuantumBoardLearner:
             circ = self.acts_circs[str(self.state)]
             circ_tomeasure = circ.copy()
             circ_tomeasure.measure_all()
-            # circ_tomeasure = transpile(circ_tomeasure)
-            # print(circ.draw())
-            job = execute(circ_tomeasure, backend=self.SIM, shots=1)
+            
+            new_circuit = transpile(circ_tomeasure, backend=self.SIM)
+            job = self.SIM.run(new_circuit, shots=1)
+
             result = job.result()
             counts = result.get_counts()
             action = int((list(counts.keys()))[0], 2)

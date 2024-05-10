@@ -5,12 +5,12 @@ from gym import spaces
 from itertools import permutations
 from qiskit import (
     QuantumCircuit,
-    execute,
-    Aer)
+    transpile)
 from qiskit.circuit.library import (
     HGate,
     XGate,
     CXGate)
+from qiskit_aer import Aer
 
 
 class QTicTacToeEnv:
@@ -112,7 +112,8 @@ class QTicTacToeEnv:
         Quantumly observe the board, return the "percept" as the statevector of the board circuit
         :return: rounded state vec of the board
         """
-        job = execute(self.circuit, self.statevec_sim)
+        new_circuit = transpile(self.circuit, self.statevec_sim)
+        job = self.statevec_sim.run(new_circuit)
         result = job.result()
         output_state = result.get_statevector()
         return np.around(output_state, decimals=2)
@@ -123,7 +124,8 @@ class QTicTacToeEnv:
         :return: final classical state of the board
         """
         self.circuit.measure_all()
-        job = execute(self.circuit, backend=self.simulator, shots=1)
+        new_circuit = transpile(self.circuit, self.simulator)
+        job = self.simulator.run(new_circuit, shots=1)
         res = job.result()
         counts = res.get_counts()
         collapsed_state = int(list(counts.keys())[0][:self.qnum], 2)
